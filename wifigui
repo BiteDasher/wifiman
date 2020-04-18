@@ -1,5 +1,6 @@
 #!/bin/bash
 if [ $UID != 0 ]; then echo "Run this by root"; exit; fi
+if [ -z "$(command -v zenity)" ]; then echo "zenity not installed."; exit; fi
 if [ "$(systemctl is-active NetworkManager)" == active ]; then
 zenity --warning --title="Information" --text="Network Manager is active. This can cause some problems" --no-wrap
 fi
@@ -17,6 +18,7 @@ if [ -z "$(command -v wpa_supplicant)" ]; then zenity --error --text="WPA_Suppli
 if [ -z "$(command -v ifconfig)" ]; then zenity --error --text="net-tools not found."; exit; fi
 if [ -z "$(command -v iwconfig)" ]; then zenity --error --text="wireless-tools not found."; exit; fi
 if [ -z "$(command -v sed)" ]; then zenity --error --text="sed not found."; exit; fi
+if [ -z "$(command -v dhclient)" ]; then zenity --error --text="dhclient not found."; exit; fi
 if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; else true; fi
 if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
 wfile=/etc/wifiman0/.wmgui
