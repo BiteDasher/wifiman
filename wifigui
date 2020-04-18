@@ -1,0 +1,114 @@
+#!/bin/bash
+if [ $UID != 0 ]; then echo "Run this by root"; exit; fi
+if [ "$(systemctl is-active NetworkManager)" == active ]; then
+zenity --warning --title="Information" --text="Network Manager is active. This can cause some problems" --no-wrap
+fi
+if [ -n "$(rfkill -r | grep -Eo "wlan * blocked *")" ]; then
+zenity --error --text="It seems like your WLAN interface(s) blocked by something. Use rfkill unblock INTERFACE" \
+	--width=300 --height=100
+exit
+fi
+if [ -z "$(command -v wifiman)" ]; then
+zenity --error --text="WifiMan not found. Please install it first." \
+	--width=300 --height=100
+exit
+fi
+if [ -z "$(command -v wpa_supplicant)" ]; then zenity --error --text="WPA_Supplicant not found."; exit; fi
+if [ -z "$(command -v ifconfig)" ]; then zenity --error --text="net-tools not found."; exit; fi
+if [ -z "$(command -v iwconfig)" ]; then zenity --error --text="wireless-tools not found."; exit; fi
+if [ -z "$(command -v sed)" ]; then zenity --error --text="sed not found."; exit; fi
+if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; else true; fi
+if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
+wfile=/etc/wifiman0/.wmgui
+bruh() {
+zenity --list --title="WifiMan GUI Manager" \
+	--width=350 --height=350 \
+	--radiolist \
+	--text="Choose option:" \
+	--column="Pick" --column="Option" \
+	FALSE "List of available networks" \
+	FALSE "Create profile" \
+	FALSE "List created profiles" \
+	FALSE "Delete profile" \
+	FALSE "Connect using profile" \
+	FALSE "Show profile password" \
+	FALSE "List available interfaces" \
+	FALSE "Disconnect" > $wfile
+bruh2
+}
+bruh2() {
+case "$(cat $wfile)" in
+"List of available networks")
+zenity --info --title="Found networks:" \
+	 --text "$(wifiman -l | sed 's/\x1b\[[0-9;]*m//g')" --width=200 --no-wrap
+bruh
+;;
+"Create profile")
+zenity --forms --title="Creating configuration" --text="fill in the fields below" \
+	--add-entry="Network name(ESSID)" \
+	--add-entry="Interface name" \
+	--add-password="Password" | tr "|" "\n" > $wfile
+	essid_thing="$(sed -n '1p' $wfile)"
+	interface_thing="$(sed -n '2p' $wfile)"
+	password_thing="$(sed -n '3p' $wfile)"
+zenity --info --title="Information" --width=200 --text="$(wifiman -cp $essid_thing $interface_thing $password_thing | sed 's/\x1b\[[0-9;]*m//g')"
+bruh
+;;
+"List created profiles")
+zenity --info --title="Created profiles:" \
+	--text "$(wifiman -lp)" --width=200
+bruh
+;;
+"Delete profile")
+#zenity --entry --title="Removing profile" --text="fill in the fields below" \
+#	--entry-text > $wfile
+#zenity --info --title="Information" --width=300 --text="$(wifiman -d $(cat $wfile) | sed 's/\x1b\[[0-9;]*m//g')"
+if [ -z "$(ls /etc/wifiman0)" ]; then zenity --error --text "No profiles found" --no-wrap; bruh; else
+zenity --list --title="Deleting profile" --width=300 --height=300 --radiolist --text="choose profile" \
+--column="Pick" --column="Profile" \
+$(for profname in $(wifiman -lp)
+do
+echo "FALSE $profname"
+done
+) > $wfile
+zenity --info --title="Information" --width=300 --text="$(wifiman -dp $(cat $wfile) | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
+fi
+bruh
+;;
+"Connect using profile")
+if [ -z "$(ls /etc/wifiman0)" ]; then zenity --error --text "No profiles found" --no-wrap; bruh; else
+zenity --list --title="Connecting" --width=300 --height=300 --radiolist --text="choose profile" \
+--column="Pick" --column="Profile" \
+$(for profname in $(wifiman -lp)
+do
+echo "FALSE $profname"
+done
+) > $wfile
+zenity --info --title="Information" --width=300 --text="$(wifiman -c $(cat $wfile) | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
+fi
+;;
+"Disconnect")
+zenity --info --title="Information" --width=300 --text="$(wifiman -d | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
+bruh
+;;
+"Show profile password")
+if [ -z "$(ls /etc/wifiman0)" ]; then zenity --error --text "No profiles found" --no-wrap; bruh; else
+zenity --list --title="Showing password" --width=300 --height=300 --radiolist --text="choose profile" \
+--column="Pick" --column="Profile" \
+$(for profname in $(wifiman -lp)
+do
+echo "FALSE $profname"
+done
+) > $wfile
+zenity --warning --title="Information" --width=300 --text="$(wifiman -sp $(cat $wfile) | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
+fi
+bruh
+;;
+"List available interfaces")
+zenity --info --title="Interfaces:" --width=200 --height=150 \
+	--text="$(ifconfig -a | sed 's/[ \t].*//;/^$/d' | tr -d ":")"
+bruh
+;;
+esac
+}
+bruh
