@@ -5,6 +5,19 @@ if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not f
 if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m;"; exit; fi
 if [ -z "$(command -v dhcpcd)" ]; then echo -e "\033[0;31mdhcpcd not found.\033[0m;"; exit; fi
 if [ $UID == 0 ]; then true; else echo "Run this script only as root."; exit; fi
+if [ ! -f /etc/systemd/system/wifiman0@.service ]; then
+cat <<EOF > /etc/systemd/system/wifiman0@.service
+[Unit]
+Description=WifiMan0
+
+[Service]
+Type=forking
+ExecStart=/etc/wifiman0/%i.bashconf.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+fi
 if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; else true; fi
 if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
 if [ -n "$(rfkill -r | grep -Eo "wlan * blocked *")" ]; then
@@ -46,17 +59,6 @@ wpa_supplicant -c /etc/wifiman0/${essid_name}.conf -i ${interface_name} &
 dhcpcd ${interface_name} &
 EOF
 chmod +x /etc/wifiman0/"${essid_name}".bashconf.sh
-cat <<EOF > /etc/systemd/system/wifiman0-"${essid_name}".service
-[Unit]
-Description=WifiMan0
-
-[Service]
-Type=forking
-ExecStart=/etc/wifiman0/${essid_name}.bashconf.sh
-
-[Install]
-WantedBy=multi-user.target
-EOF
 echo -e "\033[1;32mConfiguration file created.\033[0m"
 exit
 ;;
@@ -67,8 +69,7 @@ ls /etc/wifiman0 | cut -d'.' -f 1 | sort -u
 essid_toremove=${@:2}
 if [ -z "$2" ]; then echo "second argument lost"; exit; fi
 if [ "${essid_toremove}" != "$(ls /etc/wifiman0 | tr ' ' '\n' | cut -d '.' -f 1 | sort -u | grep -x "${essid_toremove}")" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$essid_toremove\033[0m \033[1;31mis not exists.\033[0m"; exit; fi
-if [ "$(systemctl is-active wifiman0-"${essid_toremove}".service)" == active ] 2>/dev/null; then systemctl stop wifiman0-"${essid_toremove}".service; else true; fi
-rm /etc/systemd/system/wifiman0-"${essid_toremove}".service
+if [ "$(systemctl is-active wifiman0@"${essid_toremove}".service)" == active ]; then systemctl stop wifiman0@"${essid_toremove}".service; else true; fi
 rm /etc/wifiman0/"${essid_toremove}".conf
 rm /etc/wifiman0/"${essid_toremove}".bashconf.sh
 echo -e "\033[1;32mProfile of \033[0;33m${essid_toremove}\033[0m \033[1;32mwas removed.\033[0m"
@@ -77,16 +78,16 @@ echo -e "\033[1;32mProfile of \033[0;33m${essid_toremove}\033[0m \033[1;32mwas r
 essid_con=${@:2}
 if [ -z "${essid_con}" ]; then echo "second argument lost"; exit; fi
 if [ "${essid_con}" != "$(ls /etc/wifiman0 | tr ' ' '\n' | cut -d '.' -f 1 | sort -u | grep -x "${essid_con}")" ]; then printf "\033[1;31mIt seems like \033[0;33m$essid_con\033[0m \033[1;31mprofile doesn't exists.\033[0m"; exit; fi
-if [ -n "$(systemctl is-active wifiman0-* | grep -x active)" ]; then echo "Turning off other profile"; systemctl stop wifiman0-*; else true; fi
-systemctl start wifiman0-"${essid_con}".service
+if [ -n "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then echo "Turning off other profile"; systemctl stop wifiman0@\*; else true; fi
+systemctl start wifiman0@"${essid_con}".service
 if [ $? == 1 ]; then
 echo -e "\033[0;31mSomething went wrong. (systemctl status wifiman0-${essid_con}.service)\033[0m"
 else echo "Done"
 fi
 ;;
 -d|--disconnect)
-if [ -n "$(systemctl is-active wifiman0-* | grep -x active)" ]; then
-systemctl stop wifiman0-* &>/dev/null
+if [ -n "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then
+systemctl stop wifiman0@\* &>/dev/null
 echo "Done"
 else
 if [ -n "$(pidof wpa_supplicant)" ]; then killall wpa_supplicant; else
@@ -156,17 +157,6 @@ wpa_supplicant -c /etc/wifiman0/${essid_name}.conf -i ${interface_name} &
 dhcpcd ${interface_name} &
 EOF
 chmod +x /etc/wifiman0/"${essid_name}".bashconf.sh
-cat <<EOF > /etc/systemd/system/wifiman0-"${essid_name}".service
-[Unit]
-Description=WifiMan0
-
-[Service]
-Type=forking
-ExecStart=/etc/wifiman0/${essid_name}.bashconf.sh
-
-[Install]
-WantedBy=multi-user.target
-EOF
 echo -e "\033[1;32mConfiguration file created.\033[0m"
 exit
 ;;
@@ -185,8 +175,7 @@ if [ "${essid_toremove}" != "$(ls /etc/wifiman0 | cut -d '.' -f 1 | sort -u | gr
 startdialog
 readthis uclike
 justcases; else true; fi
-if [ "$(systemctl is-active wifiman0-"${essid_toremove}".service)" == active ] 2>/dev/null; then systemctl stop wifiman0-"${essid_toremove}".service; else true; fi
-rm /etc/systemd/system/wifiman0-"${essid_toremove}".service
+if [ "$(systemctl is-active wifiman0@"${essid_toremove}".service)" == active ]; then systemctl stop wifiman0@"${essid_toremove}".service; else true; fi
 rm /etc/wifiman0/"${essid_toremove}".conf
 rm /etc/wifiman0/"${essid_toremove}".bashconf.sh
 echo -e "\033[1;32mProfile of \033[0;33m${essid_toremove}\033[0m \033[1;32mwas removed.\033[0m"
@@ -202,14 +191,14 @@ if [ "${essid_con}" != "$(ls /etc/wifiman0 | tr ' ' '\n' | cut -d '.' -f 1 | sor
 startdialog
 readthis uclike
 justcases; else true; fi
-if [ -n "$(systemctl is-active wifiman0-* | grep -x active)" ] 2>/dev/null; then echo "Turning off other profile"; systemctl stop wifiman0-*; else true; fi
-systemctl start wifiman0-"${essid_con}".service ||
+if [ -n "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then echo "Turning off other profile"; systemctl stop wifiman0@\*; else true; fi
+systemctl start wifiman0@"${essid_con}".service ||
 echo -e "\033[0;31mSomething went wrong. (systemctl status wifiman0-"${essid_con}".service)\033[0m";
 exit
 ;;
 5)
-if [ -n "$(systemctl is-active wifiman0-* | grep -x active)" ]; then
-systemctl stop wifiman0-* &>/dev/null
+if [ -n "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then
+systemctl stop wifiman0@\* &>/dev/null
 else
 if [ -n "$(pidof wpa_supplicant)" ]; then killall wpa_supplicant; else
 echo -e "\033[1;36mWifiMan doesn't running.\033[0m"
@@ -246,7 +235,7 @@ justcases
 esac
 }
 if [ ! $INTMOD ]; then
-if [ -n "$(systemctl is-active wifiman0-*.service | grep -x active)" ]; then echo -e "\033[1;33mCurrently, network is working through WifiMan\033[0m"; else true; fi
+if [ "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then echo -e "\033[1;33mCurrently, network is working through WifiMan\033[0m"; else true; fi
 startdialog
 readthis uclike
 justcases
