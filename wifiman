@@ -3,6 +3,7 @@ if [ -z "$(command -v wpa_supplicant)" ]; then echo -e "\033[0;31mWPA_Supplicant
 if [ -z "$(command -v ifconfig)" ]; then echo -e "\033[0;31mnet-tools not found.\033[0m"; exit; fi
 if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not found.\033[0m"; exit; fi
 if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m;"; exit; fi
+if [ -z "$(command -v dhcpcd)" ]; then echo -e "\033[0;31mdhcpcd not found.\033[0m;"; exit; fi
 if [ $UID == 0 ]; then true; else echo "Run this script only as root."; exit; fi
 if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; else true; fi
 if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
@@ -42,8 +43,7 @@ EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}".bashconf.sh
 #!/bin/bash
 wpa_supplicant -c /etc/wifiman0/${essid_name}.conf -i ${interface_name} &
-dhclient ${interface_name} &
-dhclient ${interface_name} -r &
+dhcpcd ${interface_name} &
 EOF
 chmod +x /etc/wifiman0/"${essid_name}".bashconf.sh
 cat <<EOF > /etc/systemd/system/wifiman0-"${essid_name}".service
@@ -153,8 +153,7 @@ EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}".bashconf.sh
 #!/bin/bash
 wpa_supplicant -c /etc/wifiman0/${essid_name}.conf -i ${interface_name} &
-dhclient ${interface_name} &
-dhclient ${interface_name} -r &
+dhcpcd ${interface_name} &
 EOF
 chmod +x /etc/wifiman0/"${essid_name}".bashconf.sh
 cat <<EOF > /etc/systemd/system/wifiman0-"${essid_name}".service
