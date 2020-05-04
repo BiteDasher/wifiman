@@ -205,7 +205,7 @@ readthis uclike
 justcases; else true; fi
 if [ -n "$(systemctl is-active wifiman0-* | grep -x active)" ]; then echo "Turning off other profile"; systemctl stop wifiman0-*; else true; fi
 systemctl start wifiman0-"${essid_con}".service ||
-echo -e "\033[0;31mSomething went wrong. (systemctl status wifiman0-${essid_con}.service)\033[0m";
+echo -e "\033[0;31mSomething went wrong. (systemctl status wifiman0-"${essid_con}".service)\033[0m";
 exit
 ;;
 5)
