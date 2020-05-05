@@ -15,7 +15,6 @@ zenity --error --text="WifiMan not found. Please install it first." \
 exit
 fi
 if [ -z "$(command -v wpa_supplicant)" ]; then zenity --error --text="WPA_Supplicant not found."; exit; fi
-if [ -z "$(command -v ifconfig)" ]; then zenity --error --text="net-tools not found."; exit; fi
 if [ -z "$(command -v iwconfig)" ]; then zenity --error --text="wireless-tools not found."; exit; fi
 if [ -z "$(command -v sed)" ]; then zenity --error --text="sed not found."; exit; fi
 if [ -z "$(command -v dhcpcd)" ]; then zenity --error --text="dhcpcd not found."; exit; fi
@@ -90,7 +89,7 @@ bruh
 ;;
 "List available interfaces")
 zenity --info --title="Interfaces:" --width=200 --height=150 \
-	--text="$(ifconfig -a | sed 's/[ \t].*//;/^$/d' | tr -d ":")"
+	--text="$(ls /sys/class/net)"
 bruh
 ;;
 esac
