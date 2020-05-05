@@ -4,7 +4,6 @@ if [ -z "$(command -v ifconfig)" ]; then echo -e "\033[0;31mnet-tools not found.
 if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not found.\033[0m"; exit; fi
 if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m"; exit; fi
 if [ -z "$(command -v dhcpcd)" ]; then echo -e "\033[0;31mdhcpcd not found.\033[0m"; exit; fi
-if [ -z "$(command -v awk)" ]; then echo -e "\033[0;31mawk not found.\033[0m"; exit; fi
 if [ $UID == 0 ]; then true; else echo "Run this script only as root."; exit; fi
 if [ ! -f /etc/systemd/system/wifiman0@.service ]; then
 cat <<EOF > /etc/systemd/system/wifiman0@.service
@@ -62,11 +61,11 @@ cat <<EOF > /etc/wifiman0/"${essid_name}"/bashconf.sh
 wpa_supplicant -c /etc/wifiman0/"${essid_name}"/wpa.conf -i ${interface_name} &
 dhcpcd ${interface_name} &
 EOF
-chmod +x /etc/wifiman0/"${essid_name}".bashconf.sh
+chmod +x /etc/wifiman0/"${essid_name}"/bashconf.sh
 if ! [ $REWRITE ]; then
 if [ "$(ls /etc/wifiman0 | wc -l)" == 1 ]; then touch /etc/wifiman0/"${essid_name}"/id1+; ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/id1; else
-ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(awk '{print $1}')+1))")
-touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(awk '{print $1}')+1))+")
+ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))")
+touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))+")
 fi; fi
 unset REWRITE
 echo -e "\033[1;32mConfiguration file created.\033[0m"
@@ -173,8 +172,8 @@ EOF
 chmod +x /etc/wifiman0/"${essid_name}"/bashconf.sh
 if ! [ $REWRITE ]; then
 if [ "$(ls /etc/wifiman0 | wc -l)" == 1 ]; then touch /etc/wifiman0/"${essid_name}"/id1+; ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/id1; else
-ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(awk '{print $1}')+1))")
-touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(awk '{print $1}')+1))+")
+ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))")
+touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))+")
 fi; fi
 unset REWRITE
 echo -e "\033[1;32mConfiguration file created.\033[0m"

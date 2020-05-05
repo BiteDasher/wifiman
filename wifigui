@@ -19,7 +19,6 @@ if [ -z "$(command -v ifconfig)" ]; then zenity --error --text="net-tools not fo
 if [ -z "$(command -v iwconfig)" ]; then zenity --error --text="wireless-tools not found."; exit; fi
 if [ -z "$(command -v sed)" ]; then zenity --error --text="sed not found."; exit; fi
 if [ -z "$(command -v dhcpcd)" ]; then zenity --error --text="dhcpcd not found."; exit; fi
-if [ -z "$(command -v awk)" ]; then zenity --error --text="awk not found."; exit; fi
 if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; else true; fi
 if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
 wfile=/etc/wifiman0/.wmgui
@@ -54,7 +53,7 @@ zenity --forms --title="Creating configuration" --text="fill in the fields below
 	essid_thing="$(sed -n '1p' $wfile)"
 	interface_thing="$(sed -n '2p' $wfile)"
 	password_thing="$(sed -n '3p' $wfile)"
-zenity --info --title="Information" --width=200 --text="$(wifiman -cp $essid_thing $interface_thing $password_thing | sed 's/\x1b\[[0-9;]*m//g')"
+zenity --info --title="Information" --width=200 --text="$(wifiman -cp "$essid_thing" $interface_thing "$password_thing" | sed 's/\x1b\[[0-9;]*m//g')"
 bruh
 ;;
 "List created profiles")
