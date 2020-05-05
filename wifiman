@@ -177,7 +177,10 @@ touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | t
 fi; fi
 unset REWRITE
 echo -e "\033[1;32mConfiguration file created.\033[0m"
-exit
+echo " "
+startdialog
+readthis uclike
+justcases
 ;;
 2)
 ls /etc/wifiman0
