@@ -2,8 +2,9 @@
 if [ -z "$(command -v wpa_supplicant)" ]; then echo -e "\033[0;31mWPA_Supplicant not found.\033[0m"; exit; fi
 if [ -z "$(command -v ifconfig)" ]; then echo -e "\033[0;31mnet-tools not found.\033[0m"; exit; fi
 if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not found.\033[0m"; exit; fi
-if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m;"; exit; fi
-if [ -z "$(command -v dhcpcd)" ]; then echo -e "\033[0;31mdhcpcd not found.\033[0m;"; exit; fi
+if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m"; exit; fi
+if [ -z "$(command -v dhcpcd)" ]; then echo -e "\033[0;31mdhcpcd not found.\033[0m"; exit; fi
+if [ -z "$(command -v awk)" ]; then echo -e "\033[0;31mawk not found.\033[0m"; exit; fi
 if [ $UID == 0 ]; then true; else echo "Run this script only as root."; exit; fi
 if [ ! -f /etc/systemd/system/wifiman0@.service ]; then
 cat <<EOF > /etc/systemd/system/wifiman0@.service
