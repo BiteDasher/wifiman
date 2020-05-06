@@ -1,9 +1,9 @@
 #!/bin/bash
-if [ -z "$(command -v wpa_supplicant)" ]; then echo -e "\033[0;31mWPA_Supplicant not found.\033[0m"; exit; fi
-if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not found.\033[0m"; exit; fi
-if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m"; exit; fi
-if [ -z "$(command -v dhcpcd)" ]; then echo -e "\033[0;31mdhcpcd not found.\033[0m"; exit; fi
-if ! [ $UID == 0 ]; then echo "Run this script only as root."; exit; fi
+if [ -z "$(command -v wpa_supplicant)" ]; then echo -e "\033[0;31mWPA_Supplicant not found.\033[0m"; exit 8; fi
+if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not found.\033[0m"; exit 8; fi
+if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m"; exit 8; fi
+if [ -z "$(command -v dhcpcd)" ]; then echo -e "\033[0;31mdhcpcd not found.\033[0m"; exit 8; fi
+if ! [ $UID == 0 ]; then echo "Run this script only as root."; exit 1; fi
 if [ ! -f /etc/systemd/system/wifiman0@.service ]; then
 cat <<EOF > /etc/systemd/system/wifiman0@.service
 [Unit]
@@ -24,7 +24,7 @@ if [ -n "$(rfkill -r | grep -Eo "wlan * blocked *")" ]; then
 echo "It seems like your WLAN interface(s) blocked by something. Use rfkill unblock INTERFACE"
 cont=1
 fi
-[[ $cont == 1 ]] && echo "Continue anyway?" && read ques && case $ques in Y*|y*) unset cont ;; *) exit ;; esac;
+[[ $cont == 1 ]] && echo "Continue anyway?" && read ques && case $ques in Y*|y*) unset cont ;; *) exit 1 ;; esac;
 if [ $1 ]; then INTMOD=1
 case "$1" in
 -h|--help)
@@ -43,10 +43,10 @@ iwlist scan 2>/dev/null | grep ESSID | sed 's/.*://' |  sed -e 's/"//g' && true
 essid_name=$2
 interface_name=$3
 essid_password=$4
-if [ -z "$2" ]; then echo "second argument lost"; exit; fi
-if [ -z "$3" ]; then echo "third argument lost"; exit; fi
+if [ -z "$2" ]; then echo "second argument lost"; exit 2; fi
+if [ -z "$3" ]; then echo "third argument lost"; exit 2; fi
 if [ -z "$4" ]; then essid_password="key_mgmt=NONE"; else essid_password="psk=\"$4\""; fi
-if [ "$interface_name" != "$(ls /sys/class/net | grep -x $interface_name)" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$interface_name\033[0m \033[1;31mis not existing interface.\033[0m"; exit; fi
+if [ "$interface_name" != "$(ls /sys/class/net | grep -x $interface_name)" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$interface_name\033[0m \033[1;31mis not existing interface.\033[0m"; exit 3; fi
 if [ -d /etc/wifiman0/"${essid_name}" ]; then REWRITE=1; else
 mkdir /etc/wifiman0/"${essid_name}"; fi
 cat <<EOF > /etc/wifiman0/"${essid_name}"/wpa.conf
@@ -68,15 +68,15 @@ touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | t
 fi; fi
 unset REWRITE
 echo -e "\033[1;32mConfiguration file created.\033[0m"
-exit
+exit 0
 ;;
 -lp|--list-profiles)
 ls /etc/wifiman0
 ;;
 -dp|--delete-profile)
 essid_toremove=${@:2}
-if [ -z "$2" ]; then echo "second argument lost"; exit; fi
-if [ "${essid_toremove}" != "$(ls /etc/wifiman0 | grep -x "${essid_toremove}")" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$essid_toremove\033[0m \033[1;31mis not exists.\033[0m"; exit; fi
+if [ -z "$2" ]; then echo "second argument lost"; exit 2; fi
+if [ "${essid_toremove}" != "$(ls /etc/wifiman0 | grep -x "${essid_toremove}")" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$essid_toremove\033[0m \033[1;31mis not exists.\033[0m"; exit 4; fi
 essid_id_toremove="$(ls /etc/wifiman0/"${essid_toremove}"\/id*+ | rev | cut -d"/" -f 1 | cut -c2-999 | rev)"
 if [ "$(systemctl is-active wifiman0@"${essid_id_toremove}".service)" == active ]; then systemctl stop wifiman0@"${essid_id_toremove}".service; fi
 rm -rf /etc/wifiman0/"${essid_toremove}"
@@ -85,13 +85,13 @@ echo -e "\033[1;32mProfile of \033[0;33m${essid_toremove}\033[0m \033[1;32mwas r
 ;;
 -c|--connect)
 essid_con=${@:2}
-if [ -z "${essid_con}" ]; then echo "second argument lost"; exit; fi
-if [ "${essid_con}" != "$(ls /etc/wifiman0 | grep -x "${essid_con}")" ]; then printf "\033[1;31mIt seems like \033[0;33m$essid_con\033[0m \033[1;31mprofile doesn't exists.\033[0m"; exit; fi
+if [ -z "${essid_con}" ]; then echo "second argument lost"; exit 2; fi
+if [ "${essid_con}" != "$(ls /etc/wifiman0 | grep -x "${essid_con}")" ]; then printf "\033[1;31mIt seems like \033[0;33m$essid_con\033[0m \033[1;31mprofile doesn't exists.\033[0m"; exit 4; fi
 if [ -n "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then echo "Turning off other profile"; systemctl stop wifiman0@\*; fi
 essid_id_con="$(ls /etc/wifiman0/"${essid_con}"\/id*+ | rev | cut -d"/" -f 1 | cut -c2-999 | rev)"
 systemctl start wifiman0@${essid_id_con}.service
 if [ $? != 0 ]; then
-echo -e "\033[0;31mSomething went wrong. (systemctl status wifiman0@${essid_id_con}.service)\033[0m"
+echo -e "\033[0;31mSomething went wrong. (systemctl status wifiman0@${essid_id_con}.service)\033[0m"; exit 7
 else echo "Done"
 fi
 ;;
@@ -101,19 +101,19 @@ systemctl stop wifiman0@\* &>/dev/null
 echo "Done"
 else
 if [ -n "$(pidof wpa_supplicant)" ]; then killall wpa_supplicant; else
-echo -e "\033[1;36mWifiMan doesn't running.\033[0m"; exit; fi; fi
+echo -e "\033[1;36mWifiMan doesn't running.\033[0m"; exit 5; fi; fi
 ;;
 -sp|--show-password)
 essid_ps=${@:2}
-if [ -z "$2" ]; then echo "second argument lost"; exit; fi
-if [ "${essid_ps}" != "$(ls /etc/wifiman0 | grep -x "${essid_ps}")" ]; then printf "\033[1;31mIt seems like \033[0;33m$essid_ps\033[0m \033[1;31mprofile doesn't exists.\033[0m"; exit; fi
+if [ -z "$2" ]; then echo "second argument lost"; exit 2; fi
+if [ "${essid_ps}" != "$(ls /etc/wifiman0 | grep -x "${essid_ps}")" ]; then printf "\033[1;31mIt seems like \033[0;33m$essid_ps\033[0m \033[1;31mprofile doesn't exists.\033[0m"; exit 4; fi
 if [ -n "$(cat /etc/wifiman0/"$essid_ps"/wpa.conf | sed '3!d' | sed "s/.*key_mgmt=//" | grep -x NONE)" ]; then echo "This network doesn't use a password."; else
 cat /etc/wifiman0/"${essid_ps}"/wpa.conf | sed '1d; 2d; $d' | cut -d "\"" -f2- | sed 's/.$//'
 fi
 ;;
 *)
 echo "Unknown argument"
-exit
+exit 6
 ;;
 esac
 fi
@@ -144,14 +144,14 @@ justcases
 echo "Which interface to configure?(write carefully)"
 ls /sys/class/net | sed ''/wlp/s//$(echo -e "\033[0;32mwlp\033[0m")/'' | sed ''/wlan/s//$(echo -e "\033[0;32mwlan\033[0m")/''
 readthis interface_name
-if ! [ $interface_name ]; then echo "lost argument"; exit; fi
+if ! [ $interface_name ]; then echo "lost argument"; exit 2; fi
 if [ "$interface_name" != "$(ls /sys/class/net | grep -x $interface_name)" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$interface_name\033[0m \033[1;31mis not existing interface.\033[0m"
 startdialog
 readthis uclike
 justcases; fi
 echo "Which netwotk to configure(ESSID)"
 readthis essid_name
-if ! [ "$essid_name" ]; then echo "lost argument"; exit; fi
+if ! [ "$essid_name" ]; then echo "lost argument"; exit 2; fi
 echo "What is the password for the network?"
 readthis essid_password
 if [ -z "$essid_password" ]; then essid_password="key_mgmt=NONE"; else essid_password="psk=\"$essid_password\""; fi
@@ -191,7 +191,7 @@ justcases
 3)
 echo "Which to remove?"
 readthis essid_toremove
-if ! [ "$essid_toremove" ]; then echo "lost argument"; exit; fi
+if ! [ "$essid_toremove" ]; then echo "lost argument"; exit 2; fi
 if [ "${essid_toremove}" != "$(ls /etc/wifiman0 | grep -x "${essid_toremove}")" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$essid_toremove\033[0m \033[1;31mis not exists.\033[0m"
 startdialog
 readthis uclike
@@ -208,7 +208,7 @@ justcases
 4)
 echo "Which network to connect?"
 readthis essid_con
-if ! [ "$essid_con" ]; then echo "lost argument"; exit; fi
+if ! [ "$essid_con" ]; then echo "lost argument"; exit 2; fi
 if [ "${essid_con}" != "$(ls /etc/wifiman0 | grep -x "${essid_con}")" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$essid_con\033[0m \033[1;31mprofile doesn't exists.\033[0m"
 startdialog
 readthis uclike
@@ -217,7 +217,7 @@ essid_id_con="$(ls /etc/wifiman0/"${essid_con}"\/id*+ | rev | cut -d"/" -f 1 | c
 if [ -n "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then echo "Turning off other profile"; systemctl stop wifiman0@\*; fi
 systemctl start wifiman0@${essid_id_con}.service ||
 echo -e "\033[0;31mSomething went wrong. (systemctl status wifiman0@${essid_id_con}.service)\033[0m";
-exit
+exit 0
 ;;
 5)
 if [ -n "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then
@@ -235,7 +235,7 @@ fi
 if [ -z "$(ls /etc/wifiman0)" ]; then echo -e "\033[0;31mNo profiles found.\033[0m"; startdialog; readthis uclike; justcases; fi
 echo "Which password to see?"
 readthis essid_ps
-if ! [ "$essid_ps" ]; then echo "lost argument"; exit; fi
+if ! [ "$essid_ps" ]; then echo "lost argument"; exit 2; fi
 if [ "${essid_ps}" != "$(ls /etc/wifiman0 | grep -x "${essid_ps}")" ]; then echo -e "\033[1;31mIt seems like \033[0;33m$essid_ps\033[0m \033[1;31mprofile doesn't exists.\033[0m"
 startdialog; readthis uclike; justcases; fi
 if [ "$(cat /etc/wifiman0/"${essid_ps}"/wpa.conf | sed '3!d' | sed "s/.*key_mgmt=//" | grep -x NONE)" ]; then echo "This network doesn't use a password."; else
@@ -247,7 +247,7 @@ justcases
 fi
 ;;
 7)
-exit
+exit 0
 ;;
 *)
 echo "Uknown argument"

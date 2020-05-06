@@ -1,23 +1,23 @@
 #!/bin/bash
-if [ $UID != 0 ]; then echo "Run this by root"; exit; fi
-if [ -z "$(command -v zenity)" ]; then echo "zenity not installed."; exit; fi
+if [ $UID != 0 ]; then echo "Run this by root"; exit 1; fi
+if [ -z "$(command -v zenity)" ]; then echo "zenity not installed."; exit 8; fi
 if [ "$(systemctl is-active NetworkManager)" == active ]; then
 zenity --warning --title="Information" --text="Network Manager is active. This can cause some problems" --no-wrap
 fi
 if [ -n "$(rfkill -r | grep -Eo "wlan * blocked *")" ]; then
 zenity --error --text="It seems like your WLAN interface(s) blocked by something. Use rfkill unblock INTERFACE" \
 	--width=300 --height=100
-exit
+exit 1
 fi
 if [ -z "$(command -v wifiman)" ]; then
 zenity --error --text="WifiMan not found. Please install it first." \
 	--width=300 --height=100
 exit
 fi
-if [ -z "$(command -v wpa_supplicant)" ]; then zenity --error --text="WPA_Supplicant not found."; exit; fi
-if [ -z "$(command -v iwconfig)" ]; then zenity --error --text="wireless-tools not found."; exit; fi
-if [ -z "$(command -v sed)" ]; then zenity --error --text="sed not found."; exit; fi
-if [ -z "$(command -v dhcpcd)" ]; then zenity --error --text="dhcpcd not found."; exit; fi
+if [ -z "$(command -v wpa_supplicant)" ]; then zenity --error --text="WPA_Supplicant not found."; exit 8; fi
+if [ -z "$(command -v iwconfig)" ]; then zenity --error --text="wireless-tools not found."; exit 8; fi
+if [ -z "$(command -v sed)" ]; then zenity --error --text="sed not found."; exit 8; fi
+if [ -z "$(command -v dhcpcd)" ]; then zenity --error --text="dhcpcd not found."; exit 8; fi
 if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; else true; fi
 if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
 wfile=/etc/wifiman0/.wmgui
