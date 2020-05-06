@@ -62,16 +62,14 @@ bruh
 ;;
 "Delete profile")
 if [ -z "$(ls /etc/wifiman0)" ]; then zenity --error --text "No profiles found" --no-wrap; bruh; else
-zenity --forms --title="Deleting profile" --text="choose profile" \
---add-entry="Profile name" > $wfile
+sudo wifiman -lp | zenity --list --title="Deleting profile" --text="choose profile" --column=Pick 2>/dev/null > $wfile
 zenity --info --title="Information" --width=300 --text="$(wifiman -dp $(cat $wfile) | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
 fi
 bruh
 ;;
 "Connect using profile")
 if [ -z "$(ls /etc/wifiman0)" ]; then zenity --error --text "No profiles found" --no-wrap; bruh; else
-zenity --forms --title="Connecting" --text="choose profile" \
---add-entry="Profile name" > $wfile
+sudo wifiman -lp | zenity --list --title="Connecting" --text="choose profile" --column=Pick 2>/dev/null > $wfile
 zenity --info --title="Information" --width=300 --text="$(wifiman -c $(cat $wfile) | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
 fi
 ;;
@@ -81,8 +79,7 @@ bruh
 ;;
 "Show profile password")
 if [ -z "$(ls /etc/wifiman0)" ]; then zenity --error --text "No profiles found" --no-wrap; bruh; else
-zenity --forms --title="Showing password" --text="choose profile" \
---add-entry="Profile name" > $wfile
+sudo wifiman -lp | zenity --list --title="Showing password" --text="choose profile" --column=Pick 2>/dev/null > $wfile
 zenity --warning --title="Information" --width=300 --text="$(wifiman -sp $(cat $wfile) | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
 fi
 bruh
