@@ -2,7 +2,7 @@
 if [ -z "$(command -v wpa_supplicant)" ]; then echo -e "\033[0;31mWPA_Supplicant not found.\033[0m"; exit 8; fi
 if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not found.\033[0m"; exit 8; fi
 if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m"; exit 8; fi
-if [ -z "$(command -v dhcpcd)" ]; then echo -e "\033[0;31mdhcpcd not found.\033[0m"; exit 8; fi
+if [ -z "$(command -v dhcpcd; command -v dhclient)" ]; then echo -e "\033[0;31mdhcp client not found.\033[0m"; exit 8; fi
 if ! [ $UID == 0 ]; then echo "Run this script only as root."; exit 1; fi
 if [ ! -f /etc/systemd/system/wifiman0@.service ]; then
 cat <<EOF > /etc/systemd/system/wifiman0@.service
@@ -25,6 +25,21 @@ echo "It seems like your WLAN interface(s) blocked by something. Use rfkill unbl
 cont=1
 fi
 [[ $cont == 1 ]] && echo "Continue anyway?" && read ques && case $ques in Y*|y*) unset cont ;; *) exit 1 ;; esac;
+if [ ! -f /etc/wifiman0/.dhcp ]; then
+if [ "$(command -v dhcpcd dhclient | wc -l)" == 2 ]; then
+	echo -e "\033[0;32mIt seems like you have two DHCP clients.\033[0m \033[0;33mdhcpcd\033[0m and \033[0;33mdhclient\033[0m. Which one to use? (If you do not see the difference, choose \033[0;35mdhcplient\033[0m) If you need to change this, execute \033[1;36mwifiman -u CLIENT\033[0m.
+1. dhcpcd
+2. dhclient"
+	read -rp "> " dhcp_choice
+	case $dhcp_choice in
+	1) future_dhcp=dhcpcd ;; 2) future_dhcp=dhclient ;; dhcp*) future_dhcp=dhcpcd ;; dhcl*) future_dhcp=dhcpcd ;; *) echo "Error. Unknown DHCP client."; exit 6 ;; esac
+	echo -e "You have chosen \033[0;33m${future_dhcp}\033[0m"; echo $future_dhcp > /etc/wifiman0/.dhcp
+else
+	if [ -n "$(command -v dhcpcd)" ]; then future_dhcp=dhcpcd; echo $future_dhcp > /etc/wifiman0/.dhcp
+	else
+		if [ -n "$(command -v dhclient)" ]; then future_dhcp=dhclient; echo $future_dhcp > /etc/wifiman0/.dhcp; else echo -e "\033[0;31mDHCP client not found.\033[0m"; exit 8; fi
+	fi; fi; fi
+dhcp_client="$(cat /etc/wifiman0/.dhcp)"
 if [ $1 ]; then INTMOD=1
 case "$1" in
 -h|--help)
@@ -33,6 +48,7 @@ echo "-l/--list to list of available ESSID's
 -lp/--list-profiles to view existing profiles
 -dp/--delete-profile to delete existing profile
 -c/--connect to connect using existing profile
+-u/--update to update current dhcp client
 -d/--disconnect to disconnect using existing profile
 -sp/--show-password to show password from network profile"
 ;;
@@ -58,7 +74,7 @@ EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}"/bashconf.sh
 #!/bin/bash
 wpa_supplicant -c /etc/wifiman0/"${essid_name}"/wpa.conf -i ${interface_name} &
-dhcpcd ${interface_name} &
+${dhcpcd_client} ${interface_name} &
 EOF
 chmod +x /etc/wifiman0/"${essid_name}"/bashconf.sh
 if ! [ $REWRITE ]; then
@@ -71,7 +87,7 @@ echo -e "\033[1;32mConfiguration file created.\033[0m"
 exit 0
 ;;
 -lp|--list-profiles)
-ls /etc/wifiman0
+ls /etc/wifiman0 | cat
 ;;
 -dp|--delete-profile)
 essid_toremove=${@:2}
@@ -94,6 +110,27 @@ if [ $? != 0 ]; then
 echo -e "\033[0;31mSomething went wrong. (systemctl status wifiman0@${essid_id_con}.service)\033[0m"; exit 7
 else echo "Done"
 fi
+;;
+-u|--update)
+if [ -z "$2" ]; then echo "second argument lost"; exit 2; fi
+if [ -z "$(ls /etc/wifiman0)" ]; then echo -e "\033[0;31mNo profiles found.\033[0m"; exit 4; fi
+dhcp_choice=$2
+case $dhcp_choice in
+dhcpcd)
+sed "3s/dhclient/dhcpcd/g" -i /etc/wifiman0/*/bashconf.sh
+echo dhcpcd > /etc/wifiman0/.dhcp
+echo Done
+;;
+dhclient)
+sed "3s/dhcpcd/dhclient/g" -i /etc/wifiman0/*/bashconf.sh
+echo dhclient > /etc/wifiman0/.dhcp
+echo Done
+;;
+*)
+echo "Unknown DHCP client. Use dhcpcd or dhclient"
+exit 6
+;;
+esac
 ;;
 -d|--disconnect)
 if [ -n "$(systemctl is-active wifiman0@\* | grep -x active)" ]; then
@@ -126,7 +163,8 @@ echo "0. List available ESSID's
 4. Connect using existing profile
 5. Disconnect using existing profile
 6. Get password from profile
-7. Exit"
+7. Change DHCP client
+8. Exit"
 }
 readthis() {
 read -rp "> " $*
@@ -166,7 +204,7 @@ EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}"/bashconf.sh
 #!/bin/bash
 wpa_supplicant -c /etc/wifiman0/"${essid_name}"/wpa.conf -i ${interface_name} &
-dhcpcd ${interface_name} &
+${dhcp_client} ${interface_name} &
 EOF
 chmod +x /etc/wifiman0/"${essid_name}"/bashconf.sh
 if ! [ $REWRITE ]; then
@@ -182,7 +220,7 @@ readthis uclike
 justcases
 ;;
 2)
-ls /etc/wifiman0
+ls /etc/wifiman0 | cat
 echo " "
 startdialog
 readthis uclike
@@ -247,6 +285,33 @@ justcases
 fi
 ;;
 7)
+if [ -z "$(ls /etc/wifiman0)" ]; then echo -e "\033[0;31mNo profiles found.\033[0m"; startdialog; readthis uclike; justcases; else
+echo -e "Which DHCP client to use? (\033[0;33mdhcpcd\033[0m or \033[0;33mdhclient\033[0m)"
+readthis dhcp_choice
+case $dhcp_choice in
+dhcpcd)
+sed "3s/dhclient/dhcpcd/g" -i /etc/wifiman0/*/bashconf.sh
+echo dhcpcd > /etc/wifiman0/.dhcp
+echo -e "\033[1;32mDone\033[0m"
+echo " "; startdialog; readthis uclike; justcases
+;;
+dhclient)
+sed "3s/dhcpcd/dhclient/g" -i /etc/wifiman0/*/bashconf.sh
+echo dhclient > /etc/wifiman0/.dhcp
+echo -e "\033[1;32mDone\033[0m"
+echo " "; startdialog; readthis uclike; justcases
+;;
+*)
+echo "Unknown DHCP client. Use dhcpcd or dhclient"
+echo " "
+startdialog
+readthis uclike
+justcases
+;;
+esac
+fi
+;;
+8)
 exit 0
 ;;
 *)

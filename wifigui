@@ -14,16 +14,30 @@ zenity --error --text="WifiMan not found. Please install it first." \
 	--width=300 --height=100
 exit
 fi
+wfile=/etc/wifiman0/.wmgui
 if [ -z "$(command -v wpa_supplicant)" ]; then zenity --error --text="WPA_Supplicant not found."; exit 8; fi
 if [ -z "$(command -v iwconfig)" ]; then zenity --error --text="wireless-tools not found."; exit 8; fi
 if [ -z "$(command -v sed)" ]; then zenity --error --text="sed not found."; exit 8; fi
-if [ -z "$(command -v dhcpcd)" ]; then zenity --error --text="dhcpcd not found."; exit 8; fi
+if [ -z "$(command -v dhcpcd; command -v dhclient)" ]; then zenity --error --text="dhcp client not found."; exit 8; fi
 if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; else true; fi
 if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
-wfile=/etc/wifiman0/.wmgui
+if [ ! -f /etc/wifiman0/.dhcp ]; then
+if [ "$(command -v dhcpcd dhclient | wc -l)" == 2 ]; then
+        zenity --list --title="Choose dhcp client" --text="If you do not see the difference, choose dhcplient" --width=300 --height=250 --radiolist \
+	--column="Pick" --column="Client" \
+	FALSE dhcpcd \
+	FALSE dhclient > "$wfile"
+        case $(cat $wfile) in
+        dhcpcd) future_dhcp=dhcpcd ;; dhclient) future_dhcp=dhcpcd ;; *) echo "Error."; exit 6 ;; esac
+	zenity --info --title="Information" --text="$(cat $wfile) selected."; echo $future_dhcp > /etc/wifiman0/.dhcp
+else
+        if [ -n "$(command -v dhcpcd)" ]; then future_dhcp=dhcpcd; echo $future_dhcp > /etc/wifiman0/.dhcp
+        else
+                if [ -n "$(command -v dhclient)" ]; then future_dhcp=dhclient; echo $future_dhcp > /etc/wifiman0/.dhcp; zenity --error --text "DHCP client not found" --width=300 --height=100; exit 8; fi
+        fi; fi; fi
 bruh() {
 zenity --list --title="WifiMan GUI Manager" \
-	--width=350 --height=350 \
+	--width=350 --height=400 \
 	--radiolist \
 	--text="Choose option:" \
 	--column="Pick" --column="Option" \
@@ -34,6 +48,7 @@ zenity --list --title="WifiMan GUI Manager" \
 	FALSE "Connect using profile" \
 	FALSE "Show profile password" \
 	FALSE "List available interfaces" \
+	FALSE "Change DHCP client" \
 	FALSE "Disconnect" > $wfile
 bruh2
 }
@@ -81,6 +96,13 @@ bruh
 if [ -z "$(ls /etc/wifiman0)" ]; then zenity --error --text "No profiles found" --no-wrap; bruh; else
 sudo wifiman -lp | zenity --list --title="Showing password" --text="choose profile" --column=Pick 2>/dev/null > $wfile
 zenity --warning --title="Information" --width=300 --text="$(wifiman -sp $(cat $wfile) | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
+fi
+bruh
+;;
+"Change DHCP client")
+if [ -z "$(ls /etc/wifiman0)" ]; then zenity --error --text "No profiles found" --no-wrap; bruh; else
+zenity --list --title="Changing DHCP client" --text="choose client" --radiolist --column=Pick --column=Profile FALSE dhcpcd FALSE dhclient 2>/dev/null > $wfile
+zenity --info --title="Information" --width=300 --text="$(wifiman -u $(cat ${wfile}) | sed 's/\x1b\[[0-9;]*m//g')" --no-wrap
 fi
 bruh
 ;;
