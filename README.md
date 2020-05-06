@@ -10,7 +10,7 @@ Artyom H. \
 (https://t.me/bruhLinkToMe): for help in writing code for id networks
 
 # Exit codes:
-1 - The script is run without root privileges. \
+1 - The script is run without root privileges or WLAN blocked. \
 2 - lost argument. \
 3 - Network interface doesn't exists. \
 4 - Profile doesn't exists. \
