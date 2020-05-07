@@ -1,8 +1,8 @@
 ifeq ($(PREFIX),)
 	PREFIX := /usr/local
 endif
-ifeq ($(SYSTEMD_DEST),)
-	SYSTEMD_DEST := /usr/lib/systemd/user
+ifeq ($(XDG_DEST),)
+	XDG_DEST := /etc/xdg/autostart
 endif
 
 help:
@@ -27,7 +27,7 @@ install_no_wifigui:
 	install -m 755 wifiman $(PREFIX)/bin
 
 install_indicator: install
-	git submodule update --init --recursive && cd wifiman-indicator && ./deps_check.sh && make && make install SYSTEMD_DEST=$(SYSTEMD_DEST) PREFIX=$(PREFIX)
+	git submodule update --init --recursive && cd wifiman-indicator && ./deps_check.sh && make && make install XDG_DEST=$(XDG_DEST) PREFIX=$(PREFIX)
 
 clean:
 	rm -rf wifiman-indicator/*
