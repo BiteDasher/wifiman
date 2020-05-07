@@ -17,6 +17,7 @@ sed \
 binutils (makedepend for wifiman-indicator(optional)) \
 DHCP client (dhcpcd or dhclient) \
 systemd \
+zenity (for wifigui) \
 bash (of course)
 
 # Thanks to:
