@@ -1,3 +1,4 @@
 [submodule "wifiman-indicator"]
 	path = wifiman-indicator
 	url = https://github.com/BiteDasher/wifiman-indicator.git
+	branch = master
