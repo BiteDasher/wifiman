@@ -1,8 +1,14 @@
 ifeq ($(PREFIX),)
 	PREFIX := /usr/local
 endif
-ifeq ($(SYSTEMD_DEST),)
-	SYSTEMD_DEST := /usr/lib/systemd/user
+ifeq ($(XDG_DEST),)
+	XDG_DEST := /etc/xdg/autostart
+endif
+ifeq ($(PK_DEST),)
+	PK_DEST := /usr/share/polkit-1/actions
+endif
+ifeq ($(PK_EXEC_DEST),)
+	PK_EXEC_DEST := \/usr\/local\/bin
 endif
 
 help:
@@ -27,7 +33,7 @@ install_no_wifigui:
 	install -m 755 wifiman $(PREFIX)/bin
 
 install_indicator: install
-	git submodule update --init --recursive && cd wifiman-indicator && ./deps_check.sh && make && make install SYSTEMD_DEST=$(SYSTEMD_DEST) PREFIX=$(PREFIX)
+	git submodule update --init --recursive && cd wifiman-indicator && ./deps_check.sh && make && make XDG_DEST=$(XDG_DEST) PK_DEST=$(PK_DEST) PK_EXEC_DEST=$(PK_EXEC_DEST) PREFIX=$(PREFIX) install
 
 clean:
 	rm -rf wifiman-indicator/*
