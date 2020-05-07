@@ -14,7 +14,7 @@ Minimalistic wpa_supplicant configuration manager
 wireless-tools \
 wpa_supplicant \
 sed \
-binutils \
+binutils (makedepend for wifiman-indicator(optional)) \
 DHCP client (dhcpcd or dhclient) \
 systemd \
 bash (of course)
