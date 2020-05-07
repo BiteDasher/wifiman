@@ -5,6 +5,20 @@ Minimalistic wpa_supplicant configuration manager
 
 **wifiman/wifiman --help or wifigui (by root)**
 
+## How-to build:
+
+**make help**
+
+# Dependencies:
+
+wireless-tools \
+wpa_supplicant \
+sed \
+binutils \
+DHCP client (dhcpcd or dhclient) \
+systemd \
+bash (of course)
+
 # Thanks to:
 Artyom H. \
 (https://t.me/bruhLinkToMe): for help in writing code for id networks
