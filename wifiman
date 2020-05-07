@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 if [ -z "$(command -v wpa_supplicant)" ]; then echo -e "\033[0;31mWPA_Supplicant not found.\033[0m"; exit 8; fi
 if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not found.\033[0m"; exit 8; fi
 if [ -z "$(command -v sed)" ]; then echo -e "\033[0;31msed not found.\033[0m"; exit 8; fi
@@ -72,7 +72,7 @@ network={
 }
 EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}"/bashconf.sh
-#!/bin/bash
+#!/usr/bin/bash
 wpa_supplicant -c /etc/wifiman0/"${essid_name}"/wpa.conf -i ${interface_name} &
 ${dhcpcd_client} ${interface_name} &
 EOF
@@ -202,7 +202,7 @@ network={
 }
 EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}"/bashconf.sh
-#!/bin/bash
+#!/usr/bin/bash
 wpa_supplicant -c /etc/wifiman0/"${essid_name}"/wpa.conf -i ${interface_name} &
 ${dhcp_client} ${interface_name} &
 EOF
