@@ -12,7 +12,7 @@ Minimalistic wpa_supplicant configuration manager
 ## (Only for installing wifiman-indicator) Note for Debian users:
 
 Before installation, make sure you executed __./debian_patch.sh__. Or, if you are maintaining this, make sure you installing with this variables: \
-**PREFIX=yourdir/usr XDG_DEST=yourdir/etc/xdg/autostart PK_DEST=yourdir/usr/share/polkit-1 PK_EXEC_DEST="\\/usr\\/bin"**
+**PREFIX=yourdir/usr XDG_DEST=yourdir/etc/xdg/autostart PK_DEST=yourdir/usr/share/polkit-1/actions PK_EXEC_DEST="\\/usr\\/bin"**
 
 # Dependencies:
 
