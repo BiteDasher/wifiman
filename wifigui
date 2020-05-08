@@ -4,11 +4,12 @@ if [ -z "$(command -v zenity)" ]; then echo "zenity not installed."; exit 8; fi
 if [ "$(systemctl is-active NetworkManager)" == active ]; then
 zenity --warning --title="Information" --text="Network Manager is active. This can cause some problems" --no-wrap
 fi
+if ! [ "$(command -v rfkill)" ]; then true; else
 if [ -n "$(rfkill -r | grep -Eo "wlan * blocked *")" ]; then
 zenity --error --text="It seems like your WLAN interface(s) blocked by something. Use rfkill unblock INTERFACE" \
 	--width=300 --height=100
 exit 1
-fi
+fi; fi
 if [ -z "$(command -v wifiman)" ]; then
 zenity --error --text="WifiMan not found. Please install it first." \
 	--width=300 --height=100

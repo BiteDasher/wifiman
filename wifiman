@@ -20,11 +20,12 @@ fi
 if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; fi
 if [ ! -d /etc/wifiman0/.ids ]; then mkdir /etc/wifiman0/.ids; fi
 if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
-if [ -n "$(rfkill -r | grep -Eo "wlan * blocked *")" ]; then
+if ! [ "$(command -v rfkill)" ]; then true; else
+if [ -n "$(rfkill -r | grep -Eo "wlan blocked")" ]; then
 echo "It seems like your WLAN interface(s) blocked by something. Use rfkill unblock INTERFACE"
 cont=1
 fi
-[[ $cont == 1 ]] && echo "Continue anyway?" && read ques && case $ques in Y*|y*) unset cont ;; *) exit 1 ;; esac;
+[[ $cont == 1 ]] && echo "Continue anyway?" && read ques && case $ques in Y*|y*) unset cont ;; *) exit 1 ;; esac; fi
 if [ ! -f /etc/wifiman0/.dhcp ]; then
 if [ "$(command -v dhcpcd dhclient | wc -l)" == 2 ]; then
 	echo -e "\033[0;32mIt seems like you have two DHCP clients.\033[0m \033[0;33mdhcpcd\033[0m and \033[0;33mdhclient\033[0m. Which one to use? (If you do not see the difference, choose \033[0;35mdhcplient\033[0m) If you need to change this, execute \033[1;36mwifiman -u CLIENT\033[0m.

@@ -33,7 +33,7 @@ install_no_wifigui:
 	install -m 755 wifiman $(PREFIX)/bin
 
 install_indicator: install
-	git submodule update --init --recursive && cd wifiman-indicator && ./deps_check.sh && make && make XDG_DEST=$(XDG_DEST) PK_DEST=$(PK_DEST) PK_EXEC_DEST=$(PK_EXEC_DEST) PREFIX=$(PREFIX) install
+	git submodule update --init --recursive && cd wifiman-indicator && ./deps_check.sh && make UPDATE_ICON=../draw.vala && make XDG_DEST=$(XDG_DEST) PK_DEST=$(PK_DEST) PK_EXEC_DEST=$(PK_EXEC_DEST) PREFIX=$(PREFIX) install
 
 clean:
 	rm -rf wifiman-indicator/*
