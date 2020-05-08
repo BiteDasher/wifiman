@@ -114,6 +114,7 @@ fi
 ;;
 -u|--update)
 if [ -z "$2" ]; then echo "second argument lost"; exit 2; fi
+if [ "$(command -v dhcpcd dhclient | wc -l)" == 1 ]; then echo -e "You have only one DHCP client installed. \033[0;33m$(cat /etc/wifiman0/.dhcp)\033[0m."; exit 8; fi
 if [ -z "$(ls /etc/wifiman0)" ]; then echo -e "\033[0;31mNo profiles found.\033[0m"; exit 4; fi
 dhcp_choice=$2
 case $dhcp_choice in
@@ -286,6 +287,7 @@ justcases
 fi
 ;;
 7)
+if [ "$(command -v dhcpcd dhclient | wc -l)" == 1 ]; then echo -e "You have only one DHCP client installed. \033[0;33m$(cat /etc/wifiman0/.dhcp)\033[0m.\n"; startdialog; readthis uclike; justcases; fi
 if [ -z "$(ls /etc/wifiman0)" ]; then echo -e "\033[0;31mNo profiles found.\033[0m"; startdialog; readthis uclike; justcases; else
 echo -e "Which DHCP client to use? (\033[0;33mdhcpcd\033[0m or \033[0;33mdhclient\033[0m)"
 readthis dhcp_choice
