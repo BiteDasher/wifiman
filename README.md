@@ -23,8 +23,7 @@ binutils (makedepend for wifiman-indicator(optional)) \
 DHCP client (dhcpcd or dhclient) \
 systemd \
 zenity (for wifigui) \
-bash (of course) \
-coreutils
+bash (of course)
 
 # Thanks to:
 Artyom H. \

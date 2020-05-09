@@ -1,4 +1,5 @@
 #!/bin/bash
+###
 if [ $UID != 0 ]; then echo "Run this by root"; exit 1; fi
 if [ -z "$(command -v zenity)" ]; then echo "zenity not installed."; exit 8; fi
 if [ "$(systemctl is-active NetworkManager)" == active ]; then
