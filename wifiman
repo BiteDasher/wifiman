@@ -76,7 +76,7 @@ EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}"/bashconf.sh
 #!/usr/bin/bash
 wpa_supplicant -c /etc/wifiman0/"${essid_name}"/wpa.conf -i ${interface_name} &
-${dhcpcd_client} ${interface_name} &
+${dhcp_client} ${interface_name} &
 EOF
 chmod +x /etc/wifiman0/"${essid_name}"/bashconf.sh
 if ! [ $REWRITE ]; then
