@@ -81,8 +81,8 @@ EOF
 chmod +x /etc/wifiman0/"${essid_name}"/bashconf.sh
 if ! [ $REWRITE ]; then
 if [ "$(ls /etc/wifiman0 | wc -l)" == 1 ]; then touch /etc/wifiman0/"${essid_name}"/id1+; ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/id1; else
-ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))")
-touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))+")
+ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -V | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))")
+touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -V | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))+")
 fi; fi
 unset REWRITE
 echo -e "\033[1;32mConfiguration file created.\033[0m"
@@ -212,8 +212,8 @@ EOF
 chmod +x /etc/wifiman0/"${essid_name}"/bashconf.sh
 if ! [ $REWRITE ]; then
 if [ "$(ls /etc/wifiman0 | wc -l)" == 1 ]; then touch /etc/wifiman0/"${essid_name}"/id1+; ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/id1; else
-ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))")
-touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -M | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))+")
+ln -s /etc/wifiman0/"${essid_name}" /etc/wifiman0/.ids/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -V | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))")
+touch /etc/wifiman0/"${essid_name}"/$(ls --sort version /etc/wifiman0/*/id*+ | tac | rev | cut -c2-999 | cut -d"/" -f 1 | rev | cut -c3-999 | sort -V | tac | paste -sd " " | echo "id$(($(cut -d" " -f 1)+1))+")
 fi; fi
 unset REWRITE
 echo -e "\033[1;32mConfiguration file created.\033[0m"
