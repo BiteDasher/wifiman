@@ -29,12 +29,12 @@ fi
 [[ $cont == 1 ]] && echo "Continue anyway?" && read ques && case $ques in Y*|y*) unset cont ;; *) exit 1 ;; esac; fi
 if [ ! -f /etc/wifiman0/.dhcp ]; then
 if [ "$(command -v dhcpcd dhclient | wc -l)" == 2 ]; then
-	echo -e "\033[0;32mIt seems like you have two DHCP clients.\033[0m \033[0;33mdhcpcd\033[0m and \033[0;33mdhclient\033[0m. Which one to use? (If you do not see the difference, choose \033[0;35mdhcplient\033[0m) If you need to change this, execute \033[1;36mwifiman -u CLIENT\033[0m.
+	echo -e "\033[0;32mIt seems like you have two DHCP clients.\033[0m \033[0;33mdhcpcd\033[0m and \033[0;33mdhclient\033[0m. Which one to use? (If you do not see the difference, choose \033[0;35mdhclient\033[0m) If you need to change this, execute \033[1;36mwifiman -u CLIENT\033[0m.
 1. dhcpcd
 2. dhclient"
 	read -rp "> " dhcp_choice
 	case $dhcp_choice in
-	1) future_dhcp=dhcpcd ;; 2) future_dhcp=dhclient ;; dhcp*) future_dhcp=dhcpcd ;; dhcl*) future_dhcp=dhcpcd ;; *) echo "Error. Unknown DHCP client."; exit 6 ;; esac
+	1) future_dhcp=dhcpcd ;; 2) future_dhcp=dhclient ;; dhcp*) future_dhcp=dhcpcd ;; dhcl*) future_dhcp=dhclient ;; *) echo "Error. Unknown DHCP client."; exit 6 ;; esac
 	echo -e "You have chosen \033[0;33m${future_dhcp}\033[0m"; echo $future_dhcp > /etc/wifiman0/.dhcp
 else
 	if [ -n "$(command -v dhcpcd)" ]; then future_dhcp=dhcpcd; echo $future_dhcp > /etc/wifiman0/.dhcp

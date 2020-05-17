@@ -25,17 +25,17 @@ if [ ! -d /etc/wifiman0 ]; then mkdir /etc/wifiman0; else true; fi
 if [ "$(ls -ld /etc/wifiman0 | cut -d' ' -f 1)" != "drwxr-----" ]; then chmod 740 /etc/wifiman0; fi
 if [ ! -f /etc/wifiman0/.dhcp ]; then
 if [ "$(command -v dhcpcd dhclient | wc -l)" == 2 ]; then
-        zenity --list --title="Choose dhcp client" --text="If you do not see the difference, choose dhcplient" --width=300 --height=250 --radiolist \
+        zenity --list --title="Choose dhcp client" --text="If you do not see the difference, choose dhclient" --width=300 --height=250 --radiolist \
 	--column="Pick" --column="Client" \
 	FALSE dhcpcd \
 	FALSE dhclient > "$wfile"
         case $(cat $wfile) in
-        dhcpcd) future_dhcp=dhcpcd ;; dhclient) future_dhcp=dhcpcd ;; *) echo "Error."; exit 6 ;; esac
+        dhcpcd) future_dhcp=dhcpcd ;; dhclient) future_dhcp=dhclient ;; *) echo "Error."; exit 6 ;; esac
 	zenity --info --title="Information" --text="$(cat $wfile) selected."; echo $future_dhcp > /etc/wifiman0/.dhcp
 else
         if [ -n "$(command -v dhcpcd)" ]; then future_dhcp=dhcpcd; echo $future_dhcp > /etc/wifiman0/.dhcp
         else
-                if [ -n "$(command -v dhclient)" ]; then future_dhcp=dhclient; echo $future_dhcp > /etc/wifiman0/.dhcp; zenity --error --text "DHCP client not found" --width=300 --height=100; exit 8; fi
+                if [ -n "$(command -v dhclient)" ]; then future_dhcp=dhclient; echo $future_dhcp > /etc/wifiman0/.dhcp; else zenity --error --text "DHCP client not found" --width=300 --height=100; exit 8; fi
         fi; fi; fi
 bruh() {
 zenity --list --title="WifiMan GUI Manager" \
