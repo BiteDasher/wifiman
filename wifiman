@@ -74,7 +74,7 @@ network={
 }
 EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}"/bashconf.sh
-#!/usr/bin/bash
+#!/bin/bash
 wpa_supplicant -c /etc/wifiman0/"${essid_name}"/wpa.conf -i ${interface_name} &
 ${dhcp_client} ${interface_name} &
 EOF
@@ -205,7 +205,7 @@ network={
 }
 EOF
 cat <<EOF > /etc/wifiman0/"${essid_name}"/bashconf.sh
-#!/usr/bin/bash
+#!/bin/bash
 wpa_supplicant -c /etc/wifiman0/"${essid_name}"/wpa.conf -i ${interface_name} &
 ${dhcp_client} ${interface_name} &
 EOF
